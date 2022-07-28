@@ -71,6 +71,37 @@ impl RollingHash {
             self.current_hash -= contribution;
         }
     }
+
+    // TODO: The functions below are to be used when extending RollingHash to implement
+    //       append_front() and remove_back()
+    //       For those, we will need to divide our current hash value, and dividing modulo M
+    //       is trickier than the other operations. See: https://cp-algorithms.com/algebra/module-inverse.html
+    // Division is tricky under modulo, we need to actually multiply by the modular multiplicative inverse
+    fn find_modular_inverse(number: u64) -> u64 {
+        // TODO: I have never really understood this
+        // Reference: https://cp-algorithms.com/algebra/module-inverse.html#finding-the-modular-inverse-using-binary-exponentiation
+        Self::fast_exponentiation(number, Self::MODULO - 2)
+    }
+
+    // Uses Modulo
+    fn fast_exponentiation(mut base: u64, mut exponent: u64) -> u64 {
+        let is_last_bit_on = |x| {
+            (x & 1) == 1
+        };
+
+        let mut result = 1;
+        while exponent != 0 {
+            if is_last_bit_on(exponent) {
+                result *= base;
+                result %= Self::MODULO;
+            }
+            base *= base;
+            base %= Self::MODULO;
+            exponent >>= 1; // Shift the bits
+        }
+
+        result
+    }
 }
 
 #[cfg(test)]
@@ -193,5 +224,21 @@ mod tests {
                 println!("Iterations: {}", counter);
             }
         }
+    }
+
+    #[test]
+    fn we_can_multiply() {
+        assert_eq!(RollingHash::fast_exponentiation(2, 3), 8);
+        assert_eq!(RollingHash::fast_exponentiation(2, 0), 1);
+        assert_eq!(RollingHash::fast_exponentiation(10, 2), 100);
+        // Big numbers also work
+        assert!(RollingHash::fast_exponentiation(257, 143) < RollingHash::MODULO);
+        assert_eq!(RollingHash::fast_exponentiation(257, 4), 362470373);
+    }
+
+    #[test]
+    fn we_can_find_inverses() {
+        assert_eq!(RollingHash::find_modular_inverse(200), 285000002);
+        assert_eq!((200 * 285000002) % RollingHash::MODULO, 1);
     }
 }
