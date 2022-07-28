@@ -5,6 +5,7 @@ pub type Hash = u64;
 pub struct RollingHash {
     current_string: VecDeque<char>,
     current_hash: Hash,
+    base_powers: Vec<u64>,
 }
 
 impl RollingHash {
@@ -15,6 +16,7 @@ impl RollingHash {
         Self {
             current_string: VecDeque::new(),
             current_hash: 0,
+            base_powers: vec![1],
         }
     }
 
@@ -34,6 +36,40 @@ impl RollingHash {
         self.current_hash *= Self::BASE;
         self.current_hash += c as u64;
         self.current_hash %= Self::MODULO;
+
+        // After we have added a character, we may need to update our
+        // precomputed base powers, for use when removing
+        // At most, we will need to use BASE^len, where len is the length of the string
+        let current_string_len = self.current_string.len();
+        let current_base_powers_len = self.base_powers.len();
+        if current_string_len > current_base_powers_len {
+            let needed = current_string_len - current_base_powers_len;
+            for _ in 0..needed {
+                // We have constructed it with one value, and we never remove values
+                let last_power = self.base_powers.last().unwrap();
+                let next_power = (last_power * Self::BASE) % Self::MODULO;
+                self.base_powers.push(next_power);
+            }
+        }
+    }
+
+    pub fn remove_front(&mut self) {
+        // If we do not have a front char, we do not need to do anything
+        if let Some(&front_char) = self.current_string.front() {
+            let len = self.current_string.len();
+            // We maintain base_powers always updated, so we should
+            // always have this value here
+            let factor = self.base_powers[len - 1];
+            let contribution = (front_char as u64 * factor) % Self::MODULO;
+            if contribution > self.current_hash {
+                // This operation would underflow, as we are using unsigned integers
+                // As we are working with MODULO, we can simply add a MODULO parcel here
+                self.current_hash += Self::MODULO;
+                // Note that at this point, current_hash could be outside the range of MODULO
+                // but this will be fixed with the subtraction below
+            }
+            self.current_hash -= contribution;
+        }
     }
 }
 
