@@ -1,5 +1,5 @@
 [package]
-name = "file_diff_rust"
+name = "rolling_hash_rust"
 version = "0.1.0"
 edition = "2021"
 
