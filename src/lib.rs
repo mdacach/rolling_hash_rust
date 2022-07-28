@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn hash_collision_example() {
-        // `find_hash_collision` found a collision after 684247772 iterations:
+        // `find_hash_collision` found a collision after 1201640840 iterations:
         let s1 = "ryIqVm6i3M25uvTttp2Qo8mlkWmKap5PkuWHtS3AZZkRBWCAE9jGCWpkgYHaQobJDJrhdwdoNRGjqQmaTAi5ZGo6hbslnzIL2HaP";
         let s2 = "eVCblKi7jexBFHudJsTfj8ibzxgXGlol8EthCd8OBniEXI6tVR9LFkNzPtNeqR3EIVERZwtG1uxFimT3cPQAHwTTiuRnj6gHh406";
         let rh1 = RollingHash::from_initial_string(s1);
