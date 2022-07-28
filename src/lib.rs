@@ -141,4 +141,57 @@ mod tests {
         let rh2 = RollingHash::from_initial_string("Amazing");
         assert_ne!(rh1.get_current_hash(), rh2.get_current_hash());
     }
+
+    #[test]
+    fn hash_changes_with_remove_front() {
+        let mut rh = RollingHash::from_initial_string("Eiger");
+        let initial_hash = rh.get_current_hash();
+        rh.remove_front();
+        let new_hash = rh.get_current_hash();
+        assert_ne!(initial_hash, new_hash);
+    }
+
+    #[test]
+    fn hash_collision_example() {
+        // `find_hash_collision` found a collision after 684247772 iterations:
+        let s1 = "ryIqVm6i3M25uvTttp2Qo8mlkWmKap5PkuWHtS3AZZkRBWCAE9jGCWpkgYHaQobJDJrhdwdoNRGjqQmaTAi5ZGo6hbslnzIL2HaP";
+        let s2 = "eVCblKi7jexBFHudJsTfj8ibzxgXGlol8EthCd8OBniEXI6tVR9LFkNzPtNeqR3EIVERZwtG1uxFimT3cPQAHwTTiuRnj6gHh406";
+        let rh1 = RollingHash::from_initial_string(s1);
+        let rh2 = RollingHash::from_initial_string(s2);
+        assert_eq!(rh1.get_current_hash(), rh2.get_current_hash());
+    }
+
+    #[test]
+    #[ignore] // It takes a while to find a hash collision
+    fn find_hash_collision() {
+        let mut counter = 0;
+        loop {
+            // Reference for random string generation: https://stackoverflow.com/a/54277357
+            use rand::{distributions::Alphanumeric, Rng};
+            let generate_random_string = |len: usize| {
+                rand::thread_rng()
+                    .sample_iter(&Alphanumeric)
+                    .take(len)
+                    .map(char::from)
+                    .collect::<String>()
+            };
+            let s1 = generate_random_string(100);
+            let s2 = generate_random_string(100);
+            let rh1 = RollingHash::from_initial_string(&s1);
+            let rh2 = RollingHash::from_initial_string(&s2);
+
+            if rh1.current_hash == rh2.current_hash && s1 != s2 {
+                println!("Hash collision found after {} iterations", counter);
+                println!("s1: {}", s1);
+                println!("s2: {}", s2);
+                println!("Both hash to: {}", rh1.current_hash);
+                break;
+            }
+            counter += 1;
+            // Printing slows down the program
+            if counter % 1_000_000 == 0 {
+                println!("Iterations: {}", counter);
+            }
+        }
+    }
 }
