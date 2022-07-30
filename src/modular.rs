@@ -1,5 +1,5 @@
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-struct Modular<const MOD: u64> {
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Ord, PartialOrd)]
+pub struct Modular<const MOD: u64> {
     value: u64,
 }
 
@@ -96,6 +96,12 @@ impl<const MOD: u64> std::ops::Div<u64> for Modular<MOD> {
 }
 
 impl<const MOD: u64> Modular<MOD> {
+    pub fn from_u64(number: u64) -> Self {
+        Self {
+            value: number % MOD,
+        }
+    }
+
     // Division is tricky under modulo, we need to actually multiply by the modular multiplicative inverse
     // See: https://cp-algorithms.com/algebra/module-inverse.html
     fn find_modular_inverse(number: u64) -> u64 {
