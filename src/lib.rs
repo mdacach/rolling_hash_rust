@@ -73,6 +73,26 @@ impl RollingHash {
         }
     }
 
+    pub fn pop_back(&mut self) {
+        // If we do not have a back char, we do not need to do anything
+        if let Some(&back_char) = self.current_string.back() {
+            // Its contribution is just the value itself
+            let contribution = back_char as u64;
+            if contribution > self.current_hash {
+                // This operation would underflow, as we are using unsigned integers
+                // As we are working with MODULO, we can simply add a MODULO parcel here
+                self.current_hash += Self::MODULO;
+                // Note that at this point, current_hash could be outside the range of MODULO
+                // but this will be fixed with the subtraction below
+            }
+            self.current_hash -= contribution;
+
+            // And now we need to "shift" the previous characters, regarding the exponents
+            self.current_hash = Self::divide_modulo(self.current_hash, Self::BASE);
+            self.current_string.pop_back();
+        }
+    }
+
     // TODO: The functions below are to be used when extending RollingHash to implement
     //       push_front() and pop_back()
     //       For those, we will need to divide our current hash value, and dividing modulo M
@@ -100,6 +120,10 @@ impl RollingHash {
         }
 
         result
+    }
+
+    fn divide_modulo(lhs: u64, rhs: u64) -> u64 {
+        (lhs * Self::find_modular_inverse(rhs)) % Self::MODULO
     }
 }
 
@@ -258,5 +282,43 @@ mod tests {
     fn we_can_find_inverses() {
         assert_eq!(RollingHash::find_modular_inverse(200), 285000002);
         assert_eq!((200 * 285000002) % RollingHash::MODULO, 1);
+    }
+
+    #[test]
+    fn pop_back_computes_the_correct_hash() {
+        let mut rh = RollingHash::from_initial_string("Eiger");
+        rh.pop_back();
+        let hash_from_popped = rh.get_current_hash();
+        let hash_from_string = RollingHash::from_initial_string("Eige").get_current_hash();
+        assert_eq!(hash_from_popped, hash_from_string);
+    }
+
+    #[test]
+    fn pop_back_on_empty_does_nothing() {
+        let mut rh = RollingHash::new();
+        let initial_hash = rh.get_current_hash();
+        rh.pop_back();
+        let new_hash = rh.get_current_hash();
+        assert_eq!(initial_hash, new_hash);
+    }
+
+    #[test]
+    fn multiple_pop_backs_compute_the_correct_hash() {
+        let hash_from_string = |string: &str| {
+            let rh = RollingHash::from_initial_string(string);
+            rh.get_current_hash()
+        };
+
+        let mut rh = RollingHash::from_initial_string("Eiger");
+        rh.pop_back();
+        assert_eq!(rh.get_current_hash(), hash_from_string("Eige"));
+        rh.pop_back();
+        assert_eq!(rh.get_current_hash(), hash_from_string("Eig"));
+        rh.pop_back();
+        assert_eq!(rh.get_current_hash(), hash_from_string("Ei"));
+        rh.pop_back();
+        assert_eq!(rh.get_current_hash(), hash_from_string("E"));
+        rh.pop_back();
+        assert_eq!(rh.get_current_hash(), hash_from_string(""));
     }
 }
