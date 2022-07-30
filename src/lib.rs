@@ -22,7 +22,7 @@ impl RollingHash {
 
     pub fn from_initial_string(input: &str) -> Self {
         let mut rh = Self::new();
-        input.chars().for_each(|c| rh.append(c));
+        input.chars().for_each(|c| rh.push_back(c));
         rh
     }
 
@@ -30,7 +30,7 @@ impl RollingHash {
         self.current_hash
     }
 
-    pub fn append(&mut self, c: char) {
+    pub fn push_back(&mut self, c: char) {
         self.current_string.push_back(c);
 
         self.current_hash *= Self::BASE;
@@ -53,7 +53,7 @@ impl RollingHash {
         }
     }
 
-    pub fn remove_front(&mut self) {
+    pub fn pop_front(&mut self) {
         // If we do not have a front char, we do not need to do anything
         if let Some(&front_char) = self.current_string.front() {
             let len = self.current_string.len();
@@ -85,9 +85,7 @@ impl RollingHash {
 
     // Uses Modulo
     fn fast_exponentiation(mut base: u64, mut exponent: u64) -> u64 {
-        let is_last_bit_on = |x| {
-            (x & 1) == 1
-        };
+        let is_last_bit_on = |x| (x & 1) == 1;
 
         let mut result = 1;
         while exponent != 0 {
@@ -125,11 +123,11 @@ mod tests {
     #[test]
     fn append_characters_to_rolling_hash() {
         let mut rh = RollingHash::new();
-        rh.append('E');
-        rh.append('i');
-        rh.append('g');
-        rh.append('e');
-        rh.append('r');
+        rh.push_back('E');
+        rh.push_back('i');
+        rh.push_back('g');
+        rh.push_back('e');
+        rh.push_back('r');
         let as_string = |vec: VecDeque<char>| -> String { vec.iter().collect() };
         assert_eq!(as_string(rh.current_string), "Eiger");
     }
@@ -138,7 +136,7 @@ mod tests {
     fn hash_changes_with_append() {
         let mut rh = RollingHash::new();
         let initial_hash = rh.get_current_hash();
-        rh.append('E');
+        rh.push_back('E');
         let new_hash = rh.get_current_hash();
         assert_ne!(initial_hash, new_hash);
     }
@@ -177,7 +175,7 @@ mod tests {
     fn hash_changes_with_remove_front() {
         let mut rh = RollingHash::from_initial_string("Eiger");
         let initial_hash = rh.get_current_hash();
-        rh.remove_front();
+        rh.pop_front();
         let new_hash = rh.get_current_hash();
         assert_ne!(initial_hash, new_hash);
     }
