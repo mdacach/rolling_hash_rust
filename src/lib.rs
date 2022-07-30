@@ -42,8 +42,8 @@ impl RollingHash {
         // At most, we will need to use BASE^len, where len is the length of the string
         let current_string_len = self.current_string.len();
         let current_base_powers_len = self.base_powers.len();
-        if current_string_len > current_base_powers_len {
-            let needed = current_string_len - current_base_powers_len;
+        if current_string_len >= current_base_powers_len {
+            let needed = current_string_len - current_base_powers_len + 1;
             for _ in 0..needed {
                 // We have constructed it with one value, and we never remove values
                 let last_power = self.base_powers.last().unwrap();
