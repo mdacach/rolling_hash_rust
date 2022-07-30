@@ -74,6 +74,7 @@ impl<const MOD: u64> std::ops::Sub<u64> for Modular<MOD> {
 impl<const MOD: u64> std::ops::Div for Modular<MOD> {
     type Output = Modular<MOD>;
 
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: Self) -> Self::Output {
         let inverse = Self::Output::find_modular_inverse(rhs.value);
 
@@ -86,6 +87,7 @@ impl<const MOD: u64> std::ops::Div for Modular<MOD> {
 impl<const MOD: u64> std::ops::Div<u64> for Modular<MOD> {
     type Output = Modular<MOD>;
 
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: u64) -> Self::Output {
         let inverse = Self::Output::find_modular_inverse(rhs);
 
