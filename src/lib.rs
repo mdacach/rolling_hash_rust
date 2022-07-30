@@ -69,6 +69,7 @@ impl RollingHash {
                 // but this will be fixed with the subtraction below
             }
             self.current_hash -= contribution;
+            self.current_string.pop_front();
         }
     }
 
@@ -108,6 +109,10 @@ mod tests {
 
     use crate::RollingHash;
 
+    fn deque_as_string(vec: VecDeque<char>) -> String {
+        vec.iter().collect()
+    }
+
     #[test]
     fn it_works() {
         let result = 2 + 2;
@@ -128,8 +133,7 @@ mod tests {
         rh.push_back('g');
         rh.push_back('e');
         rh.push_back('r');
-        let as_string = |vec: VecDeque<char>| -> String { vec.iter().collect() };
-        assert_eq!(as_string(rh.current_string), "Eiger");
+        assert_eq!(deque_as_string(rh.current_string), "Eiger");
     }
 
     #[test]
@@ -139,6 +143,14 @@ mod tests {
         rh.push_back('E');
         let new_hash = rh.get_current_hash();
         assert_ne!(initial_hash, new_hash);
+    }
+
+    #[test]
+    fn string_changes_with_push() {
+        let mut rh = RollingHash::new();
+        rh.push_back('E');
+        let string = deque_as_string(rh.current_string);
+        assert_eq!(string, "E");
     }
 
     #[test]
@@ -178,6 +190,14 @@ mod tests {
         rh.pop_front();
         let new_hash = rh.get_current_hash();
         assert_ne!(initial_hash, new_hash);
+    }
+
+    #[test]
+    fn string_changes_with_pop_front() {
+        let mut rh = RollingHash::from_initial_string("Eiger");
+        rh.pop_front();
+        let string = deque_as_string(rh.current_string);
+        assert_eq!(string, "iger");
     }
 
     #[test]
