@@ -78,7 +78,7 @@ impl<const MOD: u64> std::ops::Div for Modular<MOD> {
         let inverse = Self::Output::find_modular_inverse(rhs.value);
 
         Self::Output {
-            value: self.value * inverse,
+            value: (self * inverse).value,
         }
     }
 }
@@ -90,7 +90,7 @@ impl<const MOD: u64> std::ops::Div<u64> for Modular<MOD> {
         let inverse = Self::Output::find_modular_inverse(rhs);
 
         Self::Output {
-            value: self.value * inverse,
+            value: (self * inverse).value,
         }
     }
 }
