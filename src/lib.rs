@@ -121,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    fn append_characters_to_rolling_hash() {
+    fn push_characters_to_rolling_hash() {
         let mut rh = RollingHash::new();
         rh.push_back('E');
         rh.push_back('i');
@@ -133,7 +133,7 @@ mod tests {
     }
 
     #[test]
-    fn hash_changes_with_append() {
+    fn hash_changes_with_push() {
         let mut rh = RollingHash::new();
         let initial_hash = rh.get_current_hash();
         rh.push_back('E');
@@ -172,7 +172,7 @@ mod tests {
     }
 
     #[test]
-    fn hash_changes_with_remove_front() {
+    fn hash_changes_with_pop_front() {
         let mut rh = RollingHash::from_initial_string("Eiger");
         let initial_hash = rh.get_current_hash();
         rh.pop_front();
