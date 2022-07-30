@@ -363,4 +363,13 @@ mod tests {
         rh.push_front('E');
         assert_eq!(rh.get_current_hash(), hash_from_string("Eiger"));
     }
+
+    #[test]
+    fn big_string_also_works() {
+        // The powers here will surely be bigger than MODULO, so if this works MODULO is ok
+        let rh =
+            RollingHash::from_initial_string("a b c d e f g h i j k l m n o p q r s t u v w x y z");
+        assert_eq!(rh.current_string.len(), 51);
+        assert!(rh.get_current_hash() < RollingHash::MODULO);
+    }
 }
