@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 
+mod modular;
 pub type Hash = u64;
 
 pub struct RollingHash {
