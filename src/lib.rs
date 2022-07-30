@@ -39,6 +39,10 @@ impl RollingHash {
 
         // After we have added a character, we may need to update our
         // precomputed base powers, for use when removing
+        self.update_base_powers();
+    }
+
+    fn update_base_powers(&mut self) {
         // At most, we will need to use BASE^len, where len is the length of the string
         let current_string_len = self.current_string.len();
         let current_base_powers_len = self.base_powers.len();
@@ -93,6 +97,21 @@ impl RollingHash {
         }
     }
 
+    pub fn push_front(&mut self, c: char) {
+        let len = self.current_string.len();
+        // We should always have base_powers[len], because we update it on both operations
+        // that increase the length: push_back() and push_front()
+        let factor = self.base_powers[len];
+        let contribution = ((c as u64) * factor) % Self::MODULO;
+        self.current_hash += contribution;
+        self.current_hash %= Self::MODULO;
+        self.current_string.push_front(c);
+
+        // After we have added a character, we may need to update our
+        // precomputed base powers, for use when removing
+        self.update_base_powers();
+    }
+
     // TODO: The functions below are to be used when extending RollingHash to implement
     //       push_front() and pop_back()
     //       For those, we will need to divide our current hash value, and dividing modulo M
@@ -131,10 +150,15 @@ impl RollingHash {
 mod tests {
     use std::collections::VecDeque;
 
-    use crate::RollingHash;
+    use crate::{Hash, RollingHash};
 
     fn deque_as_string(vec: VecDeque<char>) -> String {
         vec.iter().collect()
+    }
+
+    fn hash_from_string(string: &str) -> Hash {
+        let rh = RollingHash::from_initial_string(string);
+        rh.get_current_hash()
     }
 
     #[test]
@@ -304,11 +328,6 @@ mod tests {
 
     #[test]
     fn multiple_pop_backs_compute_the_correct_hash() {
-        let hash_from_string = |string: &str| {
-            let rh = RollingHash::from_initial_string(string);
-            rh.get_current_hash()
-        };
-
         let mut rh = RollingHash::from_initial_string("Eiger");
         rh.pop_back();
         assert_eq!(rh.get_current_hash(), hash_from_string("Eige"));
@@ -320,5 +339,28 @@ mod tests {
         assert_eq!(rh.get_current_hash(), hash_from_string("E"));
         rh.pop_back();
         assert_eq!(rh.get_current_hash(), hash_from_string(""));
+    }
+
+    #[test]
+    fn push_front_computes_the_correct_hash() {
+        let mut rh = RollingHash::from_initial_string("iger");
+        rh.push_front('E');
+        let hash_from_pushed = rh.get_current_hash();
+        assert_eq!(hash_from_pushed, hash_from_string("Eiger"));
+    }
+
+    #[test]
+    fn multiple_push_fronts_compute_the_correct_hash() {
+        let mut rh = RollingHash::from_initial_string("");
+        rh.push_front('r');
+        assert_eq!(rh.get_current_hash(), hash_from_string("r"));
+        rh.push_front('e');
+        assert_eq!(rh.get_current_hash(), hash_from_string("er"));
+        rh.push_front('g');
+        assert_eq!(rh.get_current_hash(), hash_from_string("ger"));
+        rh.push_front('i');
+        assert_eq!(rh.get_current_hash(), hash_from_string("iger"));
+        rh.push_front('E');
+        assert_eq!(rh.get_current_hash(), hash_from_string("Eiger"));
     }
 }
