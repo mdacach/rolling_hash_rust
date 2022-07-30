@@ -1,12 +1,18 @@
 use std::collections::VecDeque;
 
+use modular::Modular;
+
 mod modular;
-pub type Hash = u64;
+
+const BIG_PRIME: u64 = 1_000_000_007;
+
+type Numeric = Modular<BIG_PRIME>;
+pub type Hash = Modular<BIG_PRIME>;
 
 pub struct RollingHash {
     current_string: VecDeque<char>,
     current_hash: Hash,
-    base_powers: Vec<u64>,
+    base_powers: Vec<Numeric>,
 }
 
 impl Default for RollingHash {
@@ -22,8 +28,8 @@ impl RollingHash {
     pub fn new() -> Self {
         Self {
             current_string: VecDeque::new(),
-            current_hash: 0,
-            base_powers: vec![1],
+            current_hash: Modular::from_u64(0),
+            base_powers: vec![Modular::from_u64(1)],
         }
     }
 
@@ -40,9 +46,8 @@ impl RollingHash {
     pub fn push_back(&mut self, c: char) {
         self.current_string.push_back(c);
 
-        self.current_hash *= Self::BASE;
-        self.current_hash += c as u64;
-        self.current_hash %= Self::MODULO;
+        self.current_hash = self.current_hash * Self::BASE;
+        self.current_hash = self.current_hash + (c as u64);
 
         // After we have added a character, we may need to update our
         // precomputed base powers, for use when removing
@@ -57,8 +62,8 @@ impl RollingHash {
             let needed = current_string_len - current_base_powers_len + 1;
             for _ in 0..needed {
                 // We have constructed it with one value, and we never remove values
-                let last_power = self.base_powers.last().unwrap();
-                let next_power = (last_power * Self::BASE) % Self::MODULO;
+                let &last_power = self.base_powers.last().unwrap();
+                let next_power = last_power * Self::BASE;
                 self.base_powers.push(next_power);
             }
         }
@@ -71,15 +76,8 @@ impl RollingHash {
             // We maintain base_powers always updated, so we should
             // always have this value here
             let factor = self.base_powers[len - 1];
-            let contribution = (front_char as u64 * factor) % Self::MODULO;
-            if contribution > self.current_hash {
-                // This operation would underflow, as we are using unsigned integers
-                // As we are working with MODULO, we can simply add a MODULO parcel here
-                self.current_hash += Self::MODULO;
-                // Note that at this point, current_hash could be outside the range of MODULO
-                // but this will be fixed with the subtraction below
-            }
-            self.current_hash -= contribution;
+            let contribution = factor * front_char as u64;
+            self.current_hash = self.current_hash - contribution;
             self.current_string.pop_front();
         }
     }
@@ -89,17 +87,10 @@ impl RollingHash {
         if let Some(&back_char) = self.current_string.back() {
             // Its contribution is just the value itself
             let contribution = back_char as u64;
-            if contribution > self.current_hash {
-                // This operation would underflow, as we are using unsigned integers
-                // As we are working with MODULO, we can simply add a MODULO parcel here
-                self.current_hash += Self::MODULO;
-                // Note that at this point, current_hash could be outside the range of MODULO
-                // but this will be fixed with the subtraction below
-            }
-            self.current_hash -= contribution;
+            self.current_hash = self.current_hash - contribution;
 
             // And now we need to "shift" the previous characters, regarding the exponents
-            self.current_hash = Self::divide_modulo(self.current_hash, Self::BASE);
+            self.current_hash = self.current_hash / Self::BASE;
             self.current_string.pop_back();
         }
     }
@@ -109,9 +100,8 @@ impl RollingHash {
         // We should always have base_powers[len], because we update it on both operations
         // that increase the length: push_back() and push_front()
         let factor = self.base_powers[len];
-        let contribution = ((c as u64) * factor) % Self::MODULO;
-        self.current_hash += contribution;
-        self.current_hash %= Self::MODULO;
+        let contribution = factor * (c as u64);
+        self.current_hash = self.current_hash + contribution;
         self.current_string.push_front(c);
 
         // After we have added a character, we may need to update our
@@ -288,7 +278,7 @@ mod tests {
                 println!("Hash collision found after {} iterations", counter);
                 println!("s1: {}", s1);
                 println!("s2: {}", s2);
-                println!("Both hash to: {}", rh1.current_hash);
+                println!("Both hash to: {:?}", rh1.current_hash);
                 break;
             }
             counter += 1;
@@ -377,6 +367,6 @@ mod tests {
         let rh =
             RollingHash::from_initial_string("a b c d e f g h i j k l m n o p q r s t u v w x y z");
         assert_eq!(rh.current_string.len(), 51);
-        assert!(rh.get_current_hash() < RollingHash::MODULO);
+        rh.get_current_hash();
     }
 }
