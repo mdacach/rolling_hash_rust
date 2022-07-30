@@ -23,7 +23,6 @@ impl Default for RollingHash {
 
 impl RollingHash {
     const BASE: u64 = 257;
-    const MODULO: u64 = 1_000_000_000 + 7;
 
     pub fn new() -> Self {
         Self {
@@ -107,39 +106,6 @@ impl RollingHash {
         // After we have added a character, we may need to update our
         // precomputed base powers, for use when removing
         self.update_base_powers();
-    }
-
-    // TODO: The functions below are to be used when extending RollingHash to implement
-    //       push_front() and pop_back()
-    //       For those, we will need to divide our current hash value, and dividing modulo M
-    //       is trickier than the other operations. See: https://cp-algorithms.com/algebra/module-inverse.html
-    // Division is tricky under modulo, we need to actually multiply by the modular multiplicative inverse
-    fn find_modular_inverse(number: u64) -> u64 {
-        // TODO: I have never really understood this
-        // Reference: https://cp-algorithms.com/algebra/module-inverse.html#finding-the-modular-inverse-using-binary-exponentiation
-        Self::fast_exponentiation(number, Self::MODULO - 2)
-    }
-
-    // Uses Modulo
-    fn fast_exponentiation(mut base: u64, mut exponent: u64) -> u64 {
-        let is_last_bit_on = |x| (x & 1) == 1;
-
-        let mut result = 1;
-        while exponent != 0 {
-            if is_last_bit_on(exponent) {
-                result *= base;
-                result %= Self::MODULO;
-            }
-            base *= base;
-            base %= Self::MODULO;
-            exponent >>= 1; // Shift the bits
-        }
-
-        result
-    }
-
-    fn divide_modulo(lhs: u64, rhs: u64) -> u64 {
-        (lhs * Self::find_modular_inverse(rhs)) % Self::MODULO
     }
 }
 
@@ -287,22 +253,6 @@ mod tests {
                 println!("Iterations: {}", counter);
             }
         }
-    }
-
-    #[test]
-    fn we_can_multiply() {
-        assert_eq!(RollingHash::fast_exponentiation(2, 3), 8);
-        assert_eq!(RollingHash::fast_exponentiation(2, 0), 1);
-        assert_eq!(RollingHash::fast_exponentiation(10, 2), 100);
-        // Big numbers also work
-        assert!(RollingHash::fast_exponentiation(257, 143) < RollingHash::MODULO);
-        assert_eq!(RollingHash::fast_exponentiation(257, 4), 362470373);
-    }
-
-    #[test]
-    fn we_can_find_inverses() {
-        assert_eq!(RollingHash::find_modular_inverse(200), 285000002);
-        assert_eq!((200 * 285000002) % RollingHash::MODULO, 1);
     }
 
     #[test]
