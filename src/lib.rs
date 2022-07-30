@@ -8,6 +8,12 @@ pub struct RollingHash {
     base_powers: Vec<u64>,
 }
 
+impl Default for RollingHash {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RollingHash {
     const BASE: u64 = 257;
     const MODULO: u64 = 1_000_000_000 + 7;
