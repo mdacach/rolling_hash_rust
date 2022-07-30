@@ -73,7 +73,7 @@ impl RollingHash {
     }
 
     // TODO: The functions below are to be used when extending RollingHash to implement
-    //       append_front() and remove_back()
+    //       push_front() and pop_back()
     //       For those, we will need to divide our current hash value, and dividing modulo M
     //       is trickier than the other operations. See: https://cp-algorithms.com/algebra/module-inverse.html
     // Division is tricky under modulo, we need to actually multiply by the modular multiplicative inverse
