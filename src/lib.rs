@@ -113,6 +113,8 @@ impl RollingHash {
 mod tests {
     use std::collections::VecDeque;
 
+    use proptest::proptest;
+
     use crate::{Hash, RollingHash};
 
     fn deque_as_string(vec: VecDeque<char>) -> String {
