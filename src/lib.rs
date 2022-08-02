@@ -319,4 +319,12 @@ mod tests {
         assert_eq!(rh.current_string.len(), 51);
         rh.get_current_hash();
     }
+
+    proptest! {
+        #[test]
+        fn doesnt_crash(s in "\\PC*") {
+            let rh = RollingHash::from_initial_string(&s);
+            rh.get_current_hash();
+        }
+    }
 }
