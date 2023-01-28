@@ -1,6 +1,6 @@
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Ord, PartialOrd)]
 pub struct Modular<const MOD: u64> {
-    value: u64,
+    pub value: u64,
 }
 
 impl<const MOD: u64> std::ops::Add for Modular<MOD> {

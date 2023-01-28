@@ -7,7 +7,7 @@ mod modular;
 const BIG_PRIME: u64 = 1_000_000_007;
 
 type Numeric = Modular<BIG_PRIME>;
-pub type Hash = Modular<BIG_PRIME>;
+type Hash = Modular<BIG_PRIME>;
 
 pub struct RollingHash {
     current_string: VecDeque<char>,
@@ -38,8 +38,8 @@ impl RollingHash {
         rh
     }
 
-    pub fn get_current_hash(&self) -> Hash {
-        self.current_hash
+    pub fn get_current_hash(&self) -> u64 {
+        self.current_hash.value
     }
 
     pub fn push_back(&mut self, c: char) {
@@ -121,7 +121,7 @@ mod tests {
         vec.iter().collect()
     }
 
-    fn hash_from_string(string: &str) -> Hash {
+    fn hash_from_string(string: &str) -> u64 {
         let rh = RollingHash::from_initial_string(string);
         rh.get_current_hash()
     }
@@ -235,6 +235,39 @@ mod tests {
                     .sample_iter(&Alphanumeric)
                     .take(len)
                     .map(char::from)
+                    .collect::<String>()
+            };
+            let s1 = generate_random_string(100);
+            let s2 = generate_random_string(100);
+            let rh1 = RollingHash::from_initial_string(&s1);
+            let rh2 = RollingHash::from_initial_string(&s2);
+
+            if rh1.current_hash == rh2.current_hash && s1 != s2 {
+                println!("Hash collision found after {} iterations", counter);
+                println!("s1: {}", s1);
+                println!("s2: {}", s2);
+                println!("Both hash to: {:?}", rh1.current_hash);
+                break;
+            }
+            counter += 1;
+            // Printing slows down the program
+            if counter % 1_000_000 == 0 {
+                println!("Iterations: {}", counter);
+            }
+        }
+    }
+
+    #[test]
+    #[ignore] // It takes a while to find a hash collision
+    fn find_hash_collision_unicode() {
+        let mut counter = 0;
+        loop {
+            // Reference for random string generation: https://stackoverflow.com/a/54277357
+            use rand::{distributions::Standard, Rng};
+            let generate_random_string = |len: usize| {
+                rand::thread_rng()
+                    .sample_iter::<char, _>(Standard)
+                    .take(len)
                     .collect::<String>()
             };
             let s1 = generate_random_string(100);
