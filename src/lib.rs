@@ -11,7 +11,7 @@ type Hash = Modular<BIG_PRIME>;
 
 pub struct RollingHash {
     current_string: VecDeque<char>,
-    current_hash: Hash,
+    current_hash: Numeric,
     base_powers: Vec<Numeric>,
 }
 
@@ -115,7 +115,7 @@ mod tests {
 
     use proptest::proptest;
 
-    use crate::{Hash, RollingHash};
+    use crate::RollingHash;
 
     fn deque_as_string(vec: VecDeque<char>) -> String {
         vec.iter().collect()
@@ -243,16 +243,16 @@ mod tests {
             let rh2 = RollingHash::from_initial_string(&s2);
 
             if rh1.current_hash == rh2.current_hash && s1 != s2 {
-                println!("Hash collision found after {} iterations", counter);
-                println!("s1: {}", s1);
-                println!("s2: {}", s2);
+                println!("Hash collision found after {counter} iterations");
+                println!("s1: {s1}");
+                println!("s2: {s2}");
                 println!("Both hash to: {:?}", rh1.current_hash);
                 break;
             }
             counter += 1;
             // Printing slows down the program
             if counter % 1_000_000 == 0 {
-                println!("Iterations: {}", counter);
+                println!("Iterations: {counter}");
             }
         }
     }
@@ -276,16 +276,16 @@ mod tests {
             let rh2 = RollingHash::from_initial_string(&s2);
 
             if rh1.current_hash == rh2.current_hash && s1 != s2 {
-                println!("Hash collision found after {} iterations", counter);
-                println!("s1: {}", s1);
-                println!("s2: {}", s2);
+                println!("Hash collision found after {counter} iterations");
+                println!("s1: {s1}");
+                println!("s2: {s2}");
                 println!("Both hash to: {:?}", rh1.current_hash);
                 break;
             }
             counter += 1;
             // Printing slows down the program
             if counter % 1_000_000 == 0 {
-                println!("Iterations: {}", counter);
+                println!("Iterations: {counter}");
             }
         }
     }
