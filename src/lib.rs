@@ -7,7 +7,6 @@ mod modular;
 const BIG_PRIME: u64 = 1_000_000_007;
 
 type Numeric = Modular<BIG_PRIME>;
-type Hash = Modular<BIG_PRIME>;
 
 pub struct RollingHash {
     current_string: VecDeque<char>,
